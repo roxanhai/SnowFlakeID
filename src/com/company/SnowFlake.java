@@ -9,7 +9,7 @@ import java.util.Random;
 public class SnowFlake {
     private static final int UNUSED_BITS = 1; // Sign bit, Unused (always set to 0)
     private static final int TIMESTAMP_BITS = 41;
-    private static final int WORKER_ID_BITS = 10;
+    private static final int WORKER_ID_BITS = 10; // Or Machine ID
     private static final int SEQUENCE_BITS = 12;
 
     private static final long maxWorkerId = (long) Math.pow(2,WORKER_ID_BITS)-1; //==  2^(10-1) == 1023
@@ -68,9 +68,9 @@ public class SnowFlake {
 
     public synchronized long newId() { //Lock method cho đến khi Thread xong task
         long currentTimestamp = newTimeStamp();
-        Random randomSequence = new Random();
         if (currentTimestamp == lastTimestamp) {
-            sequence = (long) Math.floor(Math.random()*(maxSequence+1));
+//            sequence = (long) Math.floor(Math.random()*(maxSequence+1));
+            sequence = new SecureRandom().nextInt(4095);
         } else {
             // reset sequence to start with zero for the next millisecond
             sequence = 0;
@@ -123,5 +123,9 @@ public class SnowFlake {
     @Override
     public String toString() {
         return  workerId +"";
+    }
+
+    public long getWorkerId() {
+        return workerId;
     }
 }
