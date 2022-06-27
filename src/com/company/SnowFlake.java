@@ -12,11 +12,10 @@ public class SnowFlake {
     private static final int WORKER_ID_BITS = 10; // Or Machine ID
     private static final int SEQUENCE_BITS = 12;
 
-    private static final long maxWorkerId = (long) Math.pow(2,WORKER_ID_BITS)-1; //==  2^(10-1) == 1023
-    private static final long maxSequence = (long) Math.pow(2,SEQUENCE_BITS)-1; //== 2^(12-1) == 4095
+    private static final long maxWorkerId = (long) Math.pow(2,WORKER_ID_BITS)-1; //==  2^(10)-1 == 1023
+    private static final long maxSequence = (long) Math.pow(2,SEQUENCE_BITS)-1; //== 2^(12)-1 == 4095
 
-    /*Instant -> Dai dien cho mot thoi diem dong thoi gian ->
-     * Epoch == Start cua Instant == {1970/01/01 (1970–01-01T00:00:00Z) }*/
+    /*Epoch == Start cua Instant == {1970/01/01 (1970–01-01T00:00:00Z) }*/
     private static final long EPOCH_START = Instant.EPOCH.toEpochMilli();
 
     private final long workerId;
@@ -44,13 +43,13 @@ public class SnowFlake {
         this.customEpoch = EPOCH_START;
     }
 
+    //GenerateID
     public synchronized long newIdSequence() { //Lock method cho đến khi Thread xong task
         long currentTimestamp = newTimeStamp();
 
         if (currentTimestamp == lastTimestamp) {
             sequence++;
             if(sequence>maxSequence) { //sequence>4095 trong 1 milisec
-                // Sequence Exhausted, wait till next millisecond.
                 currentTimestamp = waitNextMillis(currentTimestamp);
                 sequence=0;
             }
@@ -69,7 +68,6 @@ public class SnowFlake {
     public synchronized long newId() { //Lock method cho đến khi Thread xong task
         long currentTimestamp = newTimeStamp();
         if (currentTimestamp == lastTimestamp) {
-//            sequence = (long) Math.floor(Math.random()*(maxSequence+1));
             sequence = new SecureRandom().nextInt(4095);
         } else {
             // reset sequence to start with zero for the next millisecond
@@ -83,6 +81,7 @@ public class SnowFlake {
         return id;
     }
 
+    //Support
     private long newTimeStamp() {
         return Instant.now().toEpochMilli() - customEpoch;
     }
@@ -103,21 +102,22 @@ public class SnowFlake {
 
             while (networkInterfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = networkInterfaces.nextElement();
-                byte[] mac = networkInterface.getHardwareAddress(); //Tra ve kieu Byte
+                byte[] mac = networkInterface.getHardwareAddress(); //Return Mac Address
+
                 if (mac != null) {
                     for(byte macPort: mac) {
-                        sb.append(String.format("%02X", macPort)); // Nối chuỗi vào String Builder, String được Format dưới dạng Hex(16) (VD Ouput: 10 = OA)
+                        sb.append(String.format("%02X", macPort)); // Convert Mac Address -> String Type
                     }
                 }
             }
 
-            workerId = sb.toString().hashCode(); //Memory Address cua String Builder sb duoi dang Hex (HashCode bằng nhau -> Object bằng nhau)
+            workerId = Long.parseLong(sb.toString());
+
         } catch (Exception ex) {
             workerId= (new SecureRandom().nextInt());  //Tao Random mot gia tri Worker ID không thể dự đoán trước để sử dụng nếu có lỗi
         }
 
-        if(workerId>maxWorkerId) return 0;
-        return workerId;
+        return workerId&maxWorkerId;
     }
 
     @Override
@@ -125,7 +125,4 @@ public class SnowFlake {
         return  workerId +"";
     }
 
-    public long getWorkerId() {
-        return workerId;
-    }
 }
