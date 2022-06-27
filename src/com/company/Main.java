@@ -28,11 +28,8 @@ public class Main extends Thread {
 //        t1.start();
 //        t2.start();
 //        t3.start();
-        SnowFlake sf4 = new SnowFlake();
         System.out.println(sample.newIdSequence());
         System.out.println(sample2.newIdSequence());
-        System.out.println(sf4.newIdSequence());
-        System.out.println(571652365&1023);
 
     }
 }

@@ -111,13 +111,15 @@ public class SnowFlake {
                 }
             }
 
-            workerId = Long.parseLong(sb.toString());
+            workerId = sb.toString().hashCode()&maxWorkerId;
+            System.out.println(workerId);
 
         } catch (Exception ex) {
-            workerId= (new SecureRandom().nextInt());  //Tao Random mot gia tri Worker ID không thể dự đoán trước để sử dụng nếu có lỗi
+            workerId= (new SecureRandom().nextInt())&maxWorkerId;  //Tao Random mot gia tri Worker ID không thể dự đoán trước để sử dụng nếu có lỗi
+            System.out.println(workerId);
         }
 
-        return workerId&maxWorkerId;
+        return workerId;
     }
 
     @Override
